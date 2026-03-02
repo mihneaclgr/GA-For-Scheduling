@@ -31,7 +31,7 @@ SUBJECTS = {
 }
 
 # Random schedule generator based on available subjects and slots
-def generator(subjects : dict):
+def generator(subjects : dict) -> np.ndarray:
     subject_list = []
     for subject_name,subject_slots in subjects.items():
         subject_list += [subject_name] * subject_slots
@@ -51,9 +51,8 @@ def generator(subjects : dict):
 
     return schedule
 
-# Grading system for a particular schedule, used to determine the
-# best potential schedules for the next generation
-def fitness(schedule : np.ndarray):
+# Grading system for a particular schedule
+def fitness(schedule : np.ndarray) -> int:
 
     # Starting fitness score, decrementing for each penalty
     fitness = 1000
@@ -91,7 +90,7 @@ def fitness(schedule : np.ndarray):
 keep_percent = 0.2
 
 # Selection process, top x% of all schedules given
-def selection (list_of_potential_schedules : list):
+def selection (list_of_potential_schedules : list) -> list[tuple]:
     best_specimens = []
 
     # Ranking each potential schedule using our fitness function
@@ -107,8 +106,7 @@ def selection (list_of_potential_schedules : list):
     return best_specimens
 
 # Create a new children schedule based on two parent schedules
-def crossover (schedule1 : np.ndarray, schedule2: np.ndarray):
-
+def crossover (schedule1 : np.ndarray, schedule2: np.ndarray) -> np.ndarray:
     # How many subjects we keep from parent1
     crossing_point = 0.5
 
@@ -149,7 +147,7 @@ def crossover (schedule1 : np.ndarray, schedule2: np.ndarray):
     return child_schedule
 
 # Using crossover randomly over our best schedules, we create our new generation
-def new_generation(best_schedules : list):
+def new_generation(best_schedules : list) -> list[np.ndarray]:
 
     # We will store our new schedules as 'parent1_id - parent2_id' : child_schedule
     new_schedules = dict()
@@ -175,7 +173,7 @@ def new_generation(best_schedules : list):
     return [child_schedule for child_name,child_schedule in new_schedules.items()]
 
 # Small mutation for generation improvement
-def mutation(schedule: np.ndarray):
+def mutation(schedule: np.ndarray) -> np.ndarray:
     mutated_schedule: ndarray[tuple[Any, ...], dtype[Any]] = schedule.copy()
 
     # Pick 2 random subjects and switch them
@@ -213,6 +211,10 @@ while new_schedule_fitness != 1000:
     # Mutate each member of the new population
     new_schedules = [mutation(s) for s in new_schedules]
 
+    # Keep the best children from the previous generation
+    new_schedules.pop()
+    new_schedules += [best_schedules[0][0]]
+
     # Evolution stop criteria
     for new_schedule in new_schedules:
         new_schedule_fitness = fitness(new_schedule)
@@ -223,7 +225,7 @@ while new_schedule_fitness != 1000:
     # Re-iterate the loop
     schedules = new_schedules
 
-elite_schedules.sort(key=lambda x: x[1],reverse=True)
+elite_schedules.sort(key=lambda x: x[1], reverse=True)
 found_schedule = elite_schedules[0]
 print(generation)
 # =====================================================================
