@@ -1,10 +1,13 @@
 # ======================================
 # GA implementation for school schedule creation
 # ======================================
+from typing import Any
 
 import numpy as np
 from random import shuffle
 from random import randint
+
+from numpy import dtype, ndarray
 
 # Five days in a week, from 8AM to 3PM
 DAYS = 5
@@ -170,12 +173,29 @@ def new_generation(best_schedules : list):
     # Return a list of all created children
     return [child_schedule for child_name,child_schedule in new_schedules.items()]
 
+# Small mutation for generation improvement
+def mutation(schedule: np.ndarray):
+    mutated_schedule: ndarray[tuple[Any, ...], dtype[Any]] = schedule.copy()
+
+    # Pick 2 random subjects and switch them
+    subject1 = randint(0,DAYS*HOURS)
+    subject2 = randint(0,DAYS*HOURS)
+    subject1 = (subject1//HOURS,subject1%DAYS)
+    subject2 = (subject2//HOURS,subject2%DAYS)
+    
+    mutated_schedule[subject1[0]][subject1[1]], mutated_schedule[subject2[0]][subject2[1]] = mutated_schedule[subject2[0]][subject2[1]], mutated_schedule[subject1[0]][subject1[1]]
+
+    return mutated_schedule
+
+
 
 
 # =================== Testing =======================
 initial_schedules = [generator(SUBJECTS) for i in range(60)]
 best_schedules = selection(initial_schedules)
 new_schedules = new_generation(best_schedules)
+for new_schedule in new_schedules:
+    new_schedule = mutation(new_schedule)
 print("Done!")
 
 
