@@ -16,7 +16,7 @@ HOURS = 7
 #Subjects as name: slots/week
 SUBJECTS = {
     "math" : 4,
-    "programming" : 4,
+    "programming" : 7,
     "romanian": 3,
     "physics" : 3,
     "biology" : 2,
@@ -26,7 +26,8 @@ SUBJECTS = {
     "sports" : 1,
     "history" : 1,
     "religion" : 1,
-    "arts" : 1
+    "arts" : 1,
+    "reasoning": 1
 }
 
 # Random schedule generator based on available subjects and slots
@@ -194,14 +195,14 @@ def mutation(schedule: np.ndarray):
 
 # Initial population
 initial_schedules = [generator(SUBJECTS) for i in range(60)]
-
 generation = 0
 new_schedule_fitness = 0
 schedules = initial_schedules
-while new_schedule_fitness < 800:
+
+elite_schedules = []
+
+while new_schedule_fitness != 1000:
     generation += 1
-    if generation%300 == 0:
-        print(generation)
 
     # Select the best specimens
     best_schedules = selection(schedules)
@@ -215,12 +216,14 @@ while new_schedule_fitness < 800:
     # Evolution stop criteria
     for new_schedule in new_schedules:
         new_schedule_fitness = fitness(new_schedule)
-        if new_schedule_fitness > 850:
-            print(f'Done\nGeneration: {generation}\nBest schedule: {new_schedule}')
-            break
+        if new_schedule_fitness == 1000:
+            # Keep all the good schedules
+            elite_schedules += [(new_schedule,new_schedule_fitness)]
+
+    # Re-iterate the loop
     schedules = new_schedules
 
-
-
-
-
+elite_schedules.sort(key=lambda x: x[1],reverse=True)
+found_schedule = elite_schedules[0]
+print(generation)
+# =====================================================================
