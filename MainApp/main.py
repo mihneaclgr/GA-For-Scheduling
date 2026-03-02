@@ -46,4 +46,36 @@ def generator(subjects : dict):
 
     return schedule
 
+# Grading system for a particular schedule, used to determine the
+# best potential schedules for the next generation
+def fitness(schedule : np.ndarray):
+
+    # Starting fitness score, decrementing for each penalty
+    fitness = 1000
+
+    # Penalty points
+    penalty_days_has_too_many_free_slots = 20
+    penalty_wrong_free_slots_placement=150
+
+    #Iterating over each day to apply penalties
+    for day in range(DAYS):
+        subject_list_for_the_day = list(schedule[day,:])
+        free_slots_count = subject_list_for_the_day.count(None)
+
+
+        # ================== Penalties regarding free slots =========================
+        # Penalty for days having too many free slots
+        if (free_slots_count > 2):
+            fitness -= penalty_days_has_too_many_free_slots
+
+        # Penalty for days having a free slot that's not at the end of the day
+        s = subject_list_for_the_day.copy()
+
+        s = s[:free_slots_count]         # this should remove all free slots for the day
+        if s.count(None) > 0:            # if it doesn't, then we penalize
+            fitness -= penalty_wrong_free_slots_placement
+        # ============================================================================
+
+    return fitness
+
 
