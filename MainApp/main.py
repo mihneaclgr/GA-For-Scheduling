@@ -116,6 +116,14 @@ def fitness(schedule : np.ndarray) -> int:
         for wrong_math_index in wrong_math_indexes:
             fitness -= penalty_late_math * (wrong_math_index - 3)
         # ============================================================================
+
+        # ================== Regarding physics =======================================
+        physics_indexes = [i for i,x in enumerate(subject_list_for_the_day) if x=='physics']
+
+        # Physics shouldn't be more than once a day
+        if len(physics_indexes) > 1:
+            fitness -= penalty_too_many_math_per_day * (len(math_indexes) - 1)
+        # ============================================================================
     return fitness
 
 # How many specimens we keep after selection
@@ -219,13 +227,11 @@ def mutation(schedule: np.ndarray) -> np.ndarray:
     return mutated_schedule
 
 # =================== Testing =======================
-
 # Initial population
 initial_schedules = [generator(SUBJECTS) for i in range(60)]
 generation = 0
 new_schedule_fitness = 0
 schedules = initial_schedules
-
 elite_schedules = []
 
 while new_schedule_fitness != 1000:
@@ -255,6 +261,5 @@ while new_schedule_fitness != 1000:
     schedules = new_schedules
 
 elite_schedules.sort(key=lambda x: x[1], reverse=True)
-found_schedule = elite_schedules[0]
 print(generation)
 # =====================================================================
