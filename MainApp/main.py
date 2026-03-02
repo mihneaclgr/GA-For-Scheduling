@@ -57,15 +57,20 @@ def fitness(schedule : np.ndarray) -> int:
     # Starting fitness score, decrementing for each penalty
     fitness = 1000
 
-    # Penalty points
-    penalty_days_has_too_many_free_slots = 20
-    penalty_wrong_free_slots_placement=150
+    # ================== Penalty points =============================
+    # Hard penalties
+    penalty_wrong_free_slots_placement = 300
+    penalty_days_has_too_many_free_slots = 100
+    penalty_too_many_programming_per_day = 100
+    # Soft penalties
+    penalty_late_programming = 20
 
-    #Iterating over each day to apply penalties
+
+
+     #Iterating over each day to apply penalties
     for day in range(DAYS):
         subject_list_for_the_day = list(schedule[day,:])
         free_slots_count = subject_list_for_the_day.count(None)
-
 
         # ================== Penalties regarding free slots =========================
         # Penalty for days having too many free slots
@@ -80,9 +85,21 @@ def fitness(schedule : np.ndarray) -> int:
             fitness -= penalty_wrong_free_slots_placement
         # ============================================================================
 
-        # ================== Other penalties =========================
-        # to be added
-        # ============================================================
+        # ================== Regarding programming ===================================
+        programming_indexes = [i for i,x in enumerate(subject_list_for_the_day) if x=='programming']
+
+        # Programming shouldn't be more than twice a day
+        if len(programming_indexes) > 2:
+            fitness -= penalty_too_many_programming_per_day * (len(programming_indexes) - 2)
+
+        # Penalise for each wrong index, based on how late the slot is
+        wrong_programming_indexes = [p for p in programming_indexes if p > 1]
+
+        for wrong_programming_index in wrong_programming_indexes:
+            fitness -= penalty_late_programming * (wrong_programming_index - 1)
+        # ============================================================================
+
+
 
     return fitness
 
@@ -185,9 +202,6 @@ def mutation(schedule: np.ndarray) -> np.ndarray:
     mutated_schedule[subject1[0]][subject1[1]], mutated_schedule[subject2[0]][subject2[1]] = mutated_schedule[subject2[0]][subject2[1]], mutated_schedule[subject1[0]][subject1[1]]
 
     return mutated_schedule
-
-
-
 
 # =================== Testing =======================
 
