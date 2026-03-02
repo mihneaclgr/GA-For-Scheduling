@@ -71,11 +71,40 @@ def fitness(schedule : np.ndarray):
         # Penalty for days having a free slot that's not at the end of the day
         s = subject_list_for_the_day.copy()
 
-        s = s[:free_slots_count]         # this should remove all free slots for the day
+        s = s[:-free_slots_count]         # this should remove all free slots for the day
         if s.count(None) > 0:            # if it doesn't, then we penalize
             fitness -= penalty_wrong_free_slots_placement
         # ============================================================================
 
+        # ================== Other penalties =========================
+        # to be added
+        # ============================================================
+
     return fitness
+
+# Selection process, top x% of all schedules given
+def selection (list_of_potential_schedules : list):
+    best_specimens = []
+    keep_percent = 0.2
+
+    # Ranking each potential schedule using our fitness function
+    for schedule in list_of_potential_schedules:
+        best_specimens += [(schedule,fitness(schedule))]
+
+    # Ordering our schedules based on their fitness
+    best_specimens.sort(key = lambda specimen: specimen[1], reverse = True)
+
+    # Keeping the best x%
+    best_specimens = best_specimens[:int(len(best_specimens)*keep_percent)]
+
+    return best_specimens
+
+
+# =================== Testing =======================
+initial_schedules = [generator(subjects) for i in range(30)]
+best_schedules = selection(initial_schedules)
+print("Done")
+
+
 
 
