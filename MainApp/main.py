@@ -103,7 +103,7 @@ def selection (list_of_potential_schedules : list):
 # =================== Testing =======================
 initial_schedules = [generator(subjects) for i in range(30)]
 best_schedules = selection(initial_schedules)
-print("Done")
+print("Done!")
 
 
 
