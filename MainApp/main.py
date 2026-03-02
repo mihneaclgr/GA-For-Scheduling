@@ -99,9 +99,25 @@ def selection (list_of_potential_schedules : list):
 
     return best_specimens
 
+# Create a new children schedule based on two parent schedules
+def crossover (schedule1 : np.ndarray, schedule2: np.ndarray):
+
+    # Empty schedule
+    child_schedule = np.ndarray((DAYS,HOURS), dtype = object)
+    child_schedule[:] = None
+
+    # We take Mon-Tue-Wed from schedule1 and Thu-Fri from schedule2
+    for i in range(3):
+        child_schedule[i] = schedule1[i]
+    for i in range(2):
+        child_schedule[i+3] = schedule2[i+3]
+
+    return child_schedule
+
+
 
 # =================== Testing =======================
-initial_schedules = [generator(subjects) for i in range(30)]
+initial_schedules = [generator(subjects) for i in range(60)]
 best_schedules = selection(initial_schedules)
 print("Done!")
 
