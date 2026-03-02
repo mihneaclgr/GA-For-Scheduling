@@ -178,10 +178,10 @@ def mutation(schedule: np.ndarray):
     mutated_schedule: ndarray[tuple[Any, ...], dtype[Any]] = schedule.copy()
 
     # Pick 2 random subjects and switch them
-    subject1 = randint(0,DAYS*HOURS)
-    subject2 = randint(0,DAYS*HOURS)
-    subject1 = (subject1//HOURS,subject1%DAYS)
-    subject2 = (subject2//HOURS,subject2%DAYS)
+    subject1 = randint(0,DAYS*HOURS-1)
+    subject2 = randint(0,DAYS*HOURS-1)
+    subject1 = (subject1//HOURS,subject1%HOURS)
+    subject2 = (subject2//HOURS,subject2%HOURS)
     
     mutated_schedule[subject1[0]][subject1[1]], mutated_schedule[subject2[0]][subject2[1]] = mutated_schedule[subject2[0]][subject2[1]], mutated_schedule[subject1[0]][subject1[1]]
 
@@ -191,12 +191,35 @@ def mutation(schedule: np.ndarray):
 
 
 # =================== Testing =======================
+
+# Initial population
 initial_schedules = [generator(SUBJECTS) for i in range(60)]
-best_schedules = selection(initial_schedules)
-new_schedules = new_generation(best_schedules)
-for new_schedule in new_schedules:
-    new_schedule = mutation(new_schedule)
-print("Done!")
+
+generation = 0
+new_schedule_fitness = 0
+schedules = initial_schedules
+while new_schedule_fitness < 800:
+    generation += 1
+    if generation%300 == 0:
+        print(generation)
+
+    # Select the best specimens
+    best_schedules = selection(schedules)
+
+    # Crossover for new population
+    new_schedules = new_generation(best_schedules)
+
+    # Mutate each member of the new population
+    new_schedules = [mutation(s) for s in new_schedules]
+
+    # Evolution stop criteria
+    for new_schedule in new_schedules:
+        new_schedule_fitness = fitness(new_schedule)
+        if new_schedule_fitness > 850:
+            print(f'Done\nGeneration: {generation}\nBest schedule: {new_schedule}')
+            break
+    schedules = new_schedules
+
 
 
 
