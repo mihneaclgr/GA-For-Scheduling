@@ -110,15 +110,38 @@ def crossover (schedule1 : np.ndarray, schedule2: np.ndarray):
 
     # Empty schedule
     child_schedule = np.ndarray((DAYS,HOURS), dtype = object)
-    child_schedule[:] = None
+    child_schedule[:] = ''
 
     # We keep part of the subjects from parent1 intact, and fill the remaining slots from parent2's remaining subjects
     it_subjects = list(SUBJECTS.items())
     kept_subjects = dict(it_subjects[:int(len(SUBJECTS) * crossing_point)])
     unkept_subjects = dict(it_subjects[int(len(SUBJECTS) * crossing_point):])
 
-    kept_subjects[None] = DAYS*HOURS - sum([v for k,v in SUBJECTS.items()])                  # add the free slots from parent1
+    kept_subjects[None] = DAYS*HOURS - sum([v for k,v in SUBJECTS.items()])          # add the free slots from parent1
 
+    # Keep schedule1 part intact
+    for day in range(DAYS):
+        for hour in range(HOURS):
+            if schedule1[day][hour] in kept_subjects.keys():
+                child_schedule[day][hour] = schedule1[day][hour]
+
+    # ================= List of all remaining slots that need to be placed =================
+    # flatten schedule2
+    schedule2_as_a_list = [subject
+                           for subject_list_for_the_day in schedule2.tolist()
+                           for subject in subject_list_for_the_day]
+    # remove kept subjects from schedule1
+    schedule2_as_a_list = [subject
+                           for subject in schedule2_as_a_list
+                           if subject not in kept_subjects.keys()]
+    # reverse the list, to use pop() later
+    schedule2_as_a_list.reverse()
+
+    # place missing slots using schedule2
+    for day in range(DAYS):
+        for hour in range(HOURS):
+            if child_schedule[day][hour] == '':
+                child_schedule[day][hour] = schedule2_as_a_list.pop()
     return child_schedule
 
 # Using crossover randomly over our best schedules, we create our new generation
