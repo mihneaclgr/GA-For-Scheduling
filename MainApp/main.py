@@ -65,7 +65,9 @@ def fitness(schedule : np.ndarray) -> int:
     penalty_too_many_math_per_day = 100
     # Soft penalties
     penalty_late_programming = 20
+    penalty_for_non_consecutive_programming = 20
     penalty_late_math = 20
+    penalty_for_non_consecutive_math = 20
 
 
 
@@ -76,7 +78,7 @@ def fitness(schedule : np.ndarray) -> int:
 
         # ================== Penalties regarding free slots =========================
         # Penalty for days having too many free slots
-        if (free_slots_count > 2):
+        if free_slots_count > 2:
             fitness -= penalty_days_has_too_many_free_slots
 
         # Penalty for days having a free slot that's not at the end of the day
@@ -88,18 +90,25 @@ def fitness(schedule : np.ndarray) -> int:
         # ============================================================================
 
         # ================== Regarding programming ===================================
-        programming_indexes = [i for i,x in enumerate(subject_list_for_the_day) if x=='programming']
+        math_indexes = [i for i,x in enumerate(subject_list_for_the_day) if x=='programming']
 
         # Programming shouldn't be more than twice a day
-        if len(programming_indexes) > 2:
-            fitness -= penalty_too_many_programming_per_day * (len(programming_indexes) - 2)
+        if len(math_indexes) > 2:
+            fitness -= penalty_too_many_programming_per_day * (len(math_indexes) - 2)
 
-        # Penalise for each wrong index, based on how late the slot is
+        # Programming slots should be consecutive
+        programming_indexes_distance = [math_indexes[i+1]-math_indexes[i]-1
+                                        for i in range(len(math_indexes)-1)]
+        # Penalize for each slot distance greater than one
+        fitness -= penalty_for_non_consecutive_programming * sum(programming_indexes_distance)
+
+        # Penalize for each wrong index, based on how late the slot is
         # Programming shouldn't be later than 10AM
-        wrong_programming_indexes = [p for p in programming_indexes if p > 1]
-
+        wrong_programming_indexes = [p for p in math_indexes if p > 1]
         for wrong_programming_index in wrong_programming_indexes:
             fitness -= penalty_late_programming * (wrong_programming_index - 1)
+
+
         # ============================================================================
 
         # ================== Regarding math ===================================
@@ -108,6 +117,12 @@ def fitness(schedule : np.ndarray) -> int:
         # Math shouldn't be more than twice a day
         if len(math_indexes) > 2:
             fitness -= penalty_too_many_math_per_day * (len(math_indexes) - 2)
+
+        # Math slots should be consecutive
+        math_indexes_distance = [math_indexes[i+1]-math_indexes[i]-1
+                                        for i in range(len(math_indexes)-1)]
+        # Penalize for each slot distance greater than one
+        fitness -= penalty_for_non_consecutive_math * sum(math_indexes_distance)
 
         # Penalise for each wrong index, based on how late the slot is
         # Math shouldn't be later than 12PM
@@ -122,7 +137,7 @@ def fitness(schedule : np.ndarray) -> int:
 
         # Physics shouldn't be more than once a day
         if len(physics_indexes) > 1:
-            fitness -= penalty_too_many_math_per_day * (len(math_indexes) - 1)
+            fitness -= penalty_too_many_math_per_day * (len(math_indexes))
         # ============================================================================
     return fitness
 
@@ -231,10 +246,11 @@ def mutation(schedule: np.ndarray) -> np.ndarray:
 initial_schedules = [generator(SUBJECTS) for i in range(60)]
 generation = 0
 new_schedule_fitness = 0
+max_fitness = 0
 schedules = initial_schedules
 elite_schedules = []
 
-while new_schedule_fitness != 1000:
+while max_fitness < 980:
     generation += 1
 
     # Select the best specimens
@@ -253,7 +269,9 @@ while new_schedule_fitness != 1000:
     # Evolution stop criteria
     for new_schedule in new_schedules:
         new_schedule_fitness = fitness(new_schedule)
-        if new_schedule_fitness == 1000:
+        if new_schedule_fitness > 900:
+            if max_fitness < new_schedule_fitness:
+                max_fitness = new_schedule_fitness
             # Keep all the good schedules
             elite_schedules += [(new_schedule,new_schedule_fitness)]
 
